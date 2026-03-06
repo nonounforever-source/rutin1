@@ -34,10 +34,7 @@ jobs:
       # ─── 5. Capacitor iOS ─────────────────────────────────────────────────
       - name: 📱 Add iOS platform
         working-directory: app_ios
-        run: |
-          if [ ! -d "ios" ]; then
-            npx cap add ios
-          fi
+        run: npx cap add ios
 
       - name: 🔄 Sync Capacitor
         working-directory: app_ios
@@ -48,10 +45,15 @@ jobs:
         working-directory: app_ios/ios/App
         run: pod install --repo-update
 
-      # ─── 7. Build بدون توقيع ──────────────────────────────────────────────
+      # ─── 7. Install xcpretty ──────────────────────────────────────────────
+      - name: 💎 Install xcpretty
+        run: gem install xcpretty
+
+      # ─── 8. Build بدون توقيع ──────────────────────────────────────────────
       - name: 🏗️ Archive app (no signing)
         working-directory: app_ios
         run: |
+          set -o pipefail
           xcodebuild archive \
             -workspace ios/App/App.xcworkspace \
             -scheme App \
@@ -62,9 +64,10 @@ jobs:
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGN_IDENTITY="" \
             AD_HOC_CODE_SIGNING_ALLOWED=YES \
+            PROVISIONING_PROFILE="" \
             | xcpretty
 
-      # ─── 8. Package IPA ───────────────────────────────────────────────────
+      # ─── 9. Package IPA ───────────────────────────────────────────────────
       - name: 📦 Package IPA
         run: |
           mkdir -p "$RUNNER_TEMP/Payload"
@@ -72,7 +75,7 @@ jobs:
           cd "$RUNNER_TEMP"
           zip -r "$RUNNER_TEMP/Routinely.ipa" Payload/
 
-      # ─── 9. Upload Artifact ───────────────────────────────────────────────
+      # ─── 10. Upload Artifact ──────────────────────────────────────────────
       - name: ⬆️ Upload IPA
         uses: actions/upload-artifact@v4
         with:
