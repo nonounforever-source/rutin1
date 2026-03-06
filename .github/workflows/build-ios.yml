@@ -40,15 +40,22 @@ jobs:
       - name: Add iOS platform
         run: npx cap add ios
 
-      # ── 7. مزامنة الملفات مع iOS ──────────────────────────────────────────
+      # ── 7. رفع الحد الأدنى لـ iOS إلى 14.0 ───────────────────────────────
+      - name: Set iOS deployment target to 14.0
+        run: |
+          sed -i '' 's/IPHONEOS_DEPLOYMENT_TARGET = [0-9.]*/IPHONEOS_DEPLOYMENT_TARGET = 14.0/g' \
+            ios/App/App.xcodeproj/project.pbxproj
+          cd ios/App && pod install --repo-update
+
+      # ── 8. مزامنة الملفات مع iOS ──────────────────────────────────────────
       - name: Sync Capacitor
         run: npx cap sync ios
 
-      # ── 8. اختيار إصدار Xcode ─────────────────────────────────────────────
+      # ── 9. اختيار إصدار Xcode ─────────────────────────────────────────────
       - name: Select Xcode version
         run: sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
 
-      # ── 9. بناء التطبيق بدون توقيع (AltStore يوقّعه لاحقاً) ───────────────
+      # ── 10. بناء التطبيق بدون توقيع (AltStore يوقّعه لاحقاً) ──────────────
       - name: Build iOS app (unsigned)
         run: |
           xcodebuild \
@@ -65,7 +72,7 @@ jobs:
             CONFIGURATION_BUILD_DIR=$PWD/build/Release-iphoneos \
             2>&1
 
-      # ── 10. تحزيم ملف .app كـ IPA ─────────────────────────────────────────
+      # ── 11. تحزيم ملف .app كـ IPA ─────────────────────────────────────────
       - name: Package as IPA
         run: |
           mkdir -p Payload
@@ -73,7 +80,7 @@ jobs:
           zip -r Routines.ipa Payload
           echo "✅ تم إنشاء ملف Routines.ipa بنجاح"
 
-      # ── 11. رفع IPA كـ Artifact ────────────────────────────────────────────
+      # ── 12. رفع IPA كـ Artifact ────────────────────────────────────────────
       - name: Upload IPA artifact
         uses: actions/upload-artifact@v4
         with:
