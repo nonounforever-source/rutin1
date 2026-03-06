@@ -36,10 +36,8 @@ jobs:
 
       - name: Fix Podfile deployment target to iOS 16
         run: |
-          PODFILE="ios/App/Podfile"
-          sed -i '' "s/platform :ios, '[^']*'/platform :ios, '16.0'/" "$PODFILE"
-          echo "--- Podfile first 5 lines ---"
-          head -5 "$PODFILE"
+          sed -i '' "s/platform :ios, '[^']*'/platform :ios, '16.0'/" ios/App/Podfile
+          head -5 ios/App/Podfile
 
       - name: Pod install
         run: cd ios/App && pod install --repo-update
@@ -52,6 +50,7 @@ jobs:
 
       - name: Build iOS app (unsigned)
         run: |
+          set -o pipefail
           xcodebuild \
             -workspace ios/App/App.xcworkspace \
             -scheme App \
@@ -62,9 +61,17 @@ jobs:
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGNING_ALLOWED=NO \
             ONLY_ACTIVE_ARCH=NO \
+            SWIFT_VERSION=5 \
+            IPHONEOS_DEPLOYMENT_TARGET=16.0 \
             clean build \
             CONFIGURATION_BUILD_DIR=$PWD/build/Release-iphoneos \
-            2>&1
+            2>&1 | tee build_output.txt | grep -E "^(error:|warning: |✓|❌|Build succeeded|Build FAILED|CompileSwift)" || true
+          # اطبع الأخطاء فقط إذا فشل البناء
+          if grep -q "Build FAILED" build_output.txt; then
+            echo "=== ERRORS ==="
+            grep "error:" build_output.txt | head -30
+            exit 1
+          fi
 
       - name: Package as IPA
         run: |
