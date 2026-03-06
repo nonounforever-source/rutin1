@@ -1,0 +1,155 @@
+@import url('https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400;1,700&family=Cairo:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Cairo", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-serif: "Amiri", serif;
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+}
+
+@layer base {
+  :root {
+    --background: #f2f2f7;
+    --foreground: #000000;
+    --card: #ffffff;
+    --card-foreground: #000000;
+    --popover: #ffffff;
+    --popover-foreground: #000000;
+    --primary: #007aff;
+    --primary-foreground: #ffffff;
+    --secondary: #e5e5ea;
+    --secondary-foreground: #000000;
+    --muted: #f2f2f7;
+    --muted-foreground: #8e8e93;
+    --accent: #007aff;
+    --accent-foreground: #ffffff;
+    --destructive: #ff3b30;
+    --destructive-foreground: #ffffff;
+    --border: #c6c6c8;
+    --input: #c6c6c8;
+    --ring: #007aff;
+    --radius: 1.25rem;
+  }
+ 
+  .dark {
+    --background: #000000;
+    --foreground: #ffffff;
+    --card: #1c1c1e;
+    --card-foreground: #ffffff;
+    --popover: #1c1c1e;
+    --popover-foreground: #ffffff;
+    --primary: #0a84ff;
+    --primary-foreground: #ffffff;
+    --secondary: #2c2c2e;
+    --secondary-foreground: #ffffff;
+    --muted: #1c1c1e;
+    --muted-foreground: #8e8e93;
+    --accent: #0a84ff;
+    --accent-foreground: #ffffff;
+    --destructive: #ff453a;
+    --destructive-foreground: #ffffff;
+    --border: #38383a;
+    --input: #38383a;
+    --ring: #0a84ff;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+    -webkit-tap-highlight-color: transparent;
+  }
+  body {
+    @apply bg-background text-foreground font-sans selection:bg-primary/20;
+    direction: rtl;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overscroll-behavior-y: none;
+    letter-spacing: -0.01em;
+  }
+  
+  /* Ensure numbers use Inter for better readability */
+  .font-number {
+    font-family: "Inter", sans-serif;
+    font-feature-settings: "tnum";
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+/* iOS Specific Styles */
+@layer components {
+  .ios-large-title {
+    @apply text-4xl font-extrabold tracking-tight text-foreground;
+    letter-spacing: -0.03em;
+  }
+  
+  .ios-card {
+    @apply bg-card rounded-[2.5rem] shadow-[0_2px_12px_rgba(0,0,0,0.04)] border border-border/40 transition-all duration-300;
+    .dark & {
+      @apply shadow-[0_2px_12px_rgba(0,0,0,0.2)] border-white/5;
+    }
+  }
+
+  .ios-button-primary {
+    @apply bg-primary text-primary-foreground font-bold rounded-2xl px-6 py-3 active:scale-[0.97] transition-all duration-200 shadow-sm flex items-center justify-center gap-2;
+  }
+
+  .ios-button-secondary {
+    @apply bg-secondary text-foreground font-bold rounded-2xl px-6 py-3 active:scale-[0.97] transition-all duration-200 flex items-center justify-center gap-2;
+  }
+
+  .ios-input {
+    @apply w-full h-12 px-4 bg-secondary/50 rounded-2xl border-none outline-none focus:ring-2 focus:ring-primary/20 transition-all font-medium;
+  }
+}
+
+/* Glassmorphism Utilities */
+.glass {
+  @apply bg-white/70 backdrop-blur-3xl border border-white/20 shadow-sm;
+  .dark & {
+    @apply bg-black/70 border-white/10;
+  }
+}
+
+.glass-card {
+  @apply bg-white/80 backdrop-blur-2xl border border-white/10 rounded-[2.5rem] shadow-sm;
+  .dark & {
+    @apply bg-black/80 border-white/5;
+  }
+}
+
+@layer utilities {
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  .pt-safe {
+    padding-top: env(safe-area-inset-top);
+  }
+}
+
+/* Custom Scrollbar for iOS feel */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
