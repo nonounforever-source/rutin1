@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - main
-  workflow_dispatch:  # يتيح تشغيل يدوي من GitHub
+  workflow_dispatch:
 
 jobs:
   build-ios:
@@ -36,26 +36,34 @@ jobs:
       - name: Install Capacitor CLI
         run: npm install --save-dev @capacitor/cli @capacitor/core @capacitor/ios @capacitor/splash-screen
 
-      # ── 6. إضافة منصة iOS ─────────────────────────────────────────────────
-      - name: Add iOS platform
-        run: npx cap add ios
+      # ── 6. إضافة منصة iOS بدون pod install ───────────────────────────────
+      - name: Add iOS platform (skip pods)
+        run: npx cap add ios --nopodinstall || true
 
-      # ── 7. رفع الحد الأدنى لـ iOS إلى 14.0 ───────────────────────────────
+      # ── 7. رفع الحد الأدنى لـ iOS إلى 14.0 قبل pod install ───────────────
       - name: Set iOS deployment target to 14.0
         run: |
           sed -i '' 's/IPHONEOS_DEPLOYMENT_TARGET = [0-9.]*/IPHONEOS_DEPLOYMENT_TARGET = 14.0/g' \
             ios/App/App.xcodeproj/project.pbxproj
-          cd ios/App && pod install --repo-update
+          # تعديل Podfile أيضاً
+          sed -i '' "s/platform :ios, '[0-9.]*'/platform :ios, '14.0'/g" ios/App/Podfile || true
+          echo "platform :ios, '14.0'" | cat - ios/App/Podfile > /tmp/podfile_tmp && mv /tmp/podfile_tmp ios/App/Podfile || true
 
-      # ── 8. مزامنة الملفات مع iOS ──────────────────────────────────────────
+      # ── 8. تشغيل pod install يدوياً ───────────────────────────────────────
+      - name: Pod install
+        run: |
+          cd ios/App
+          pod install --repo-update
+
+      # ── 9. مزامنة الملفات مع iOS ──────────────────────────────────────────
       - name: Sync Capacitor
         run: npx cap sync ios
 
-      # ── 9. اختيار إصدار Xcode ─────────────────────────────────────────────
+      # ── 10. اختيار إصدار Xcode ────────────────────────────────────────────
       - name: Select Xcode version
         run: sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
 
-      # ── 10. بناء التطبيق بدون توقيع (AltStore يوقّعه لاحقاً) ──────────────
+      # ── 11. بناء التطبيق بدون توقيع ───────────────────────────────────────
       - name: Build iOS app (unsigned)
         run: |
           xcodebuild \
@@ -72,7 +80,7 @@ jobs:
             CONFIGURATION_BUILD_DIR=$PWD/build/Release-iphoneos \
             2>&1
 
-      # ── 11. تحزيم ملف .app كـ IPA ─────────────────────────────────────────
+      # ── 12. تحزيم ملف .app كـ IPA ─────────────────────────────────────────
       - name: Package as IPA
         run: |
           mkdir -p Payload
@@ -80,7 +88,7 @@ jobs:
           zip -r Routines.ipa Payload
           echo "✅ تم إنشاء ملف Routines.ipa بنجاح"
 
-      # ── 12. رفع IPA كـ Artifact ────────────────────────────────────────────
+      # ── 13. رفع IPA كـ Artifact ────────────────────────────────────────────
       - name: Upload IPA artifact
         uses: actions/upload-artifact@v4
         with:
