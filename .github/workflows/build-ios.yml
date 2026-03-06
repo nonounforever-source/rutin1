@@ -31,21 +31,15 @@ jobs:
       - name: Install Capacitor CLI
         run: npm install --save-dev @capacitor/cli @capacitor/core @capacitor/ios @capacitor/splash-screen
 
-      # cap add ios سيفشل في pod install لكنه يكون قد أنشأ الملفات
       - name: Add iOS platform (ignore pod error)
         run: npx cap add ios || true
 
-      # نصلح Podfile قبل pod install
-      - name: Fix Podfile deployment target
+      - name: Fix Podfile deployment target to iOS 16
         run: |
           PODFILE="ios/App/Podfile"
-          if [ -f "$PODFILE" ]; then
-            sed -i '' "s/platform :ios, '[^']*'/platform :ios, '14.0'/" "$PODFILE"
-            head -3 "$PODFILE"
-          else
-            echo "Podfile not found!"
-            exit 1
-          fi
+          sed -i '' "s/platform :ios, '[^']*'/platform :ios, '16.0'/" "$PODFILE"
+          echo "--- Podfile first 5 lines ---"
+          head -5 "$PODFILE"
 
       - name: Pod install
         run: cd ios/App && pod install --repo-update
